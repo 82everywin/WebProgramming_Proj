@@ -1,33 +1,67 @@
-'use strict';
+const Room = require('./Models/room');
 
 /**
- * Module dependencies.
+  Module dependencies.
  */
-
-var express = require('express');
+// express : 서버 
+const express = require('express');
+const axios = require('axios');
 var http = require('http');
+require('dotenv').config()
+const cors = require('cors');
+const mongoose = require("mongoose");
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-var socket = require('./routes/socket.js');
 
-var app = express();
-var server = http.createServer(app);
 
-/* Configuration */
-app.set('views', __dirname + '/views');
-app.use(express.static(__dirname + '/public'));
-app.set('port', 3000);
+mongoose
+  .connect(process.env.DB)
+  .then( async() => {
+    console.log("[Server] connected to database");
 
-if (process.env.NODE_ENV === 'development') {
-	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-}
+  const rooms = await Room.find({});
+    if (rooms.length === 0) {
+      const initialRooms = [
+        { room: '자바스크립트 단톡방', members: [] },
+        { room: '리액트 단톡방', members: [] },
+        { room: 'NodeJS 단톡방', members: [] },
+      ];
+      await Room.insertMany(initialRooms);
+      console.log('[Server] Initial rooms created');
+    };
+      
+  })
 
-/* Socket.io Communication */
-var io = require('socket.io').listen(server);
-io.sockets.on('connection', socket);
-
-/* Start server */
-server.listen(app.get('port'), function (){
-  console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
+ 
+  .catch(err => {
+    console.error('Database connection error', err);
 });
 
+
+app.post('/api/chatgpt', async (req, res) => {
+  console.log('Received request:', req.body); 
+  try {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      req.body,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+      }
+    );
+    res.json(response.data);
+    console.log("[proxyServer]", response.data);
+  } catch (error) {
+    console.error('[Server] Error calling OpenAI API:', error);
+    res.status(500).json({ error: 'Error calling OpenAI API' });
+  }
+});
+
+
 module.exports = app;
+
+
