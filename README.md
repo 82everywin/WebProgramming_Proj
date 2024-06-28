@@ -1,4 +1,6 @@
-chatapp-client 부분에 디렉터리 표시로 폴더 이동이 되지 않아 
-해당 부분만 업로드한 새로운 레포지토리로 대체합니다. 
+🎬 - [시연 영상](https://youtu.be/_FNETTv0R3c) 
+<br>
+<br>
+👀 - [자료 링크첨부.pdf](https://github.com/user-attachments/files/16029393/202101568-.pdf)
+--
 
-링크 : https://github.com/82everywin/Chattering_Front.git
